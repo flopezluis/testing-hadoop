@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -25,37 +26,27 @@ public class ZipFileWriter {
     private ZipOutputStream zipOutputStream;
     private FileOutputStream fileOutputStream;
     OutputStream os;
-    public ZipFileWriter() {
+    
+    
+    public ZipFileWriter(String name) {
+    	zipFileName = "/data/" + name + ".zip";
     }
 
     public void setup() {
-//        if (Project.getProject().isEnvLocal()) {
-//            rootDir = Project.getProject().getResultsDir();
-//            zipFileName = rootDir
-//                    + System.getProperty("file.separator") + "native.zip";
-//        } else {
-//            rootDir = ParameterProcessing.TMP_DIR_HADOOP
-//                    + System.getProperty("file.separator") + "output";            
-//            zipFileName = rootDir
-//                    + System.getProperty("file.separator") + "native.zip";
-//        }
-		FileSystem fs;
-		try {
-			fs = FileSystem.get(new Configuration());
-			Path path = new Path("/data/native.zip");
-			os = fs.create(path);
-
-			rootDir = "/data";
-			zipFileName = "/data/native.zip";
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
+    	FileSystem fs;
+    	try {
+    		fs = FileSystem.get(new Configuration());
+    		Path path = new Path(zipFileName);
+    		os = fs.create(path);
+    		rootDir = "/data";
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
+    	log.info("CREADO " + zipFileName);
     }
 
     public void openZipForWriting() throws IOException {
-    	log.info("OPEN MET");
+    	
         //fileOutputStream = new FileOutputStream(zipFileName);
         zipOutputStream = new ZipOutputStream(new BufferedOutputStream(os));
     }

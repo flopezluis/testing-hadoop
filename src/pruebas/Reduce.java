@@ -1,7 +1,10 @@
 package pruebas;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.logging.Logger;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -13,22 +16,32 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 public class Reduce extends Reducer<Text, Text, Text, Text> {
-    protected ZipFileWriter zipFileWriter = new ZipFileWriter();
+    protected ZipFileWriter zipFileWriter = null;
+    private HashMap<String, ZipFileWriter> zips = new HashMap<String, ZipFileWriter>();
     Logger log = Logger.getLogger("log_file");
     
 	@Override
     @SuppressWarnings("unchecked")
     protected void setup(Reducer.Context context)
             throws IOException, InterruptedException {
-		zipFileWriter.setup();
-		zipFileWriter.openZipForWriting();
 	}
 	 @Override
 	 public void reduce(Text key, Iterable<Text> values, Context context) {
 		 FileSystem fs;
 		 try {
+			 String jobKey = key.toString();
+			 zipFileWriter = zips.get(jobKey);
+			 if (zipFileWriter == null) {
+				 log.info("CREA " + jobKey);
+				zipFileWriter = new ZipFileWriter(jobKey);
+				zipFileWriter.setup();
+				zipFileWriter.openZipForWriting();
+				zips.put(jobKey, zipFileWriter);
+			 } else {
+				 log.info("GET " + jobKey);
+			 }
+				
 			 fs = FileSystem.get(new Configuration());
-
 			 for (Text t: values) {
 				 Path path = new Path(t.toString());
 				 if (fs.exists(path)) {
@@ -44,6 +57,9 @@ public class Reduce extends Reducer<Text, Text, Text, Text> {
 	    @SuppressWarnings("unchecked")
 	    protected void cleanup(Reducer.Context context)
 	            throws IOException, InterruptedException {
-		 zipFileWriter.closeZip();
+		Iterator<String> it =  zips.keySet().iterator();
+		while (it.hasNext()) {
+			zips.get(it.next()).closeZip();
 		}
+	 }
 }
