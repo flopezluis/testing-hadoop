@@ -36,11 +36,6 @@ public class Map extends Mapper<LongWritable, Text, Text, Text> {
 		FileSystem fs = FileSystem.get(new Configuration());
 		Path path = new Path("/data/" + UUID.randomUUID());
 		OutputStream os = fs.create(path);
-		
-		
-        
-
-        System.out.println("data");
         String message = null;
         String jobKey = null;
         try {
@@ -68,16 +63,8 @@ public class Map extends Mapper<LongWritable, Text, Text, Text> {
 	 * @throws XPathExpressionException
 	 * @throws CodecException
 	 */
-	public static String getMessage(String body) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder builder = factory.newDocumentBuilder();
-        InputSource is = new InputSource(new StringReader(body));
-		Document doc = builder.parse(is);
-		XPathFactory xPathfactory = XPathFactory.newInstance();
-		XPath xpath = xPathfactory.newXPath();
-		XPathExpression expr = xpath.compile("//storage");
-		String message = expr.evaluate(doc, XPathConstants.STRING).toString();
-		return message;
+	public static String getMessage(String xml) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
+		return getXpath("//storage", xml);
 	}
 	
 	/**
@@ -90,15 +77,30 @@ public class Map extends Mapper<LongWritable, Text, Text, Text> {
 	 * @throws XPathExpressionException
 	 * @throws CodecException
 	 */
-	public static String getJobKey(String body) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
+	public static String getXpath(String expression, String xml) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
-        InputSource is = new InputSource(new StringReader(body));
+        InputSource is = new InputSource(new StringReader(xml));
 		Document doc = builder.parse(is);
 		XPathFactory xPathfactory = XPathFactory.newInstance();
 		XPath xpath = xPathfactory.newXPath();
-		XPathExpression expr = xpath.compile("//@jobKey");
+		XPathExpression expr = xpath.compile(expression);
 		String message = expr.evaluate(doc, XPathConstants.STRING).toString();
 		return message;
+	}
+	
+	
+	/**
+	 * It gets the message from an . 
+	 * @param body
+	 * @return the message 
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws XPathExpressionException
+	 * @throws CodecException
+	 */
+	public static String getJobKey(String xml) throws ParserConfigurationException, SAXException, IOException, XPathExpressionException {
+		return getXpath("//@jobKey", xml);
 	}
 }

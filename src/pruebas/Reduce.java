@@ -47,6 +47,7 @@ public class Reduce extends Reducer<Text, Text, Text, Text> {
 				 if (fs.exists(path)) {
 					 FSDataInputStream in = fs.open(path);
 					 zipFileWriter.addTextFile(t.toString(), in.readLine());
+					 fs.deleteOnExit(path);
 				 }
 			 }
 		 } catch (IOException e) {
